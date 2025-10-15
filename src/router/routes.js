@@ -1,12 +1,16 @@
 const routes = [
+  // Public/auth landing
+  { path: '/', component: () => import('pages/LoginPage.vue') },
+  { path: '/login', component: () => import('pages/LoginPage.vue') },
+  { path: '/register-student', component: () => import('pages/RegisterStudent.vue') },
+  { path: '/register-teacher', component: () => import('pages/RegisterTeacher.vue') },
+
+  // Protected app routes under /app
   {
-    path: '/',
+    path: '/app',
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/IndexPage.vue') },
-      { path: 'login', component: () => import('pages/LoginPage.vue') },
-      { path: 'register-student', component: () => import('pages/RegisterStudent.vue') },
-      { path: 'register-teacher', component: () => import('pages/RegisterTeacher.vue') },
       { path: 'students', component: () => import('pages/StudentsPage.vue') },
       { path: 'students/:id', component: () => import('pages/StudentDetail.vue') },
       { path: 'teachers', component: () => import('pages/TeachersPage.vue') },

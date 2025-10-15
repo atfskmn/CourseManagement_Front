@@ -88,18 +88,37 @@ import { ref } from 'vue'
 // EssentialLink component is no longer used here (we use simple q-item navigation)
 import { useAuthStore } from 'stores/auth'
 
-// keep only in-app navigation links to minimize icon usage
-const linksList = [
-  { title: 'Home', caption: 'Overview', icon: 'home', link: '/' },
-  { title: 'Students', caption: 'Students', icon: 'person', link: '/students' },
-  { title: 'Teachers', caption: 'Teachers', icon: 'school', link: '/teachers' },
-  { title: 'Courses', caption: 'Courses', icon: 'menu_book', link: '/courses' },
-  { title: 'Cart', caption: 'Cart', icon: 'shopping_cart', link: '/cart' },
-  { title: 'Orders', caption: 'Orders', icon: 'receipt', link: '/orders' }
-]
+import { onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+
+// linksList will be computed based on user role
+const linksList = computed(() => {
+  const base = [
+    { title: 'Home', caption: 'Overview', icon: 'home', link: '/app' },
+    { title: 'Students', caption: 'Students', icon: 'person', link: '/app/students' },
+    { title: 'Teachers', caption: 'Teachers', icon: 'school', link: '/app/teachers' },
+    { title: 'Courses', caption: 'Courses', icon: 'menu_book', link: '/app/courses' }
+  ]
+  if (!auth.user) return base
+  if (auth.user.role === 'TEACHER') {
+    // Teachers shouldn't see cart/orders
+    return base
+  }
+  // Students see cart and orders
+  base.push({ title: 'Cart', caption: 'Cart', icon: 'shopping_cart', link: '/app/cart' })
+  base.push({ title: 'Orders', caption: 'Orders', icon: 'receipt', link: '/app/orders' })
+  return base
+})
 
 const leftDrawerOpen = ref(false)
 const auth = useAuthStore()
+
+const router = useRouter()
+onMounted(() => {
+  if (!auth.user) {
+    window.setTimeout(() => { router.push('/login') }, 10)
+  }
+})
 
 function logout() {
   auth.logout()
