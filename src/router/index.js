@@ -33,5 +33,18 @@ export default defineRouter(function (/* { store, ssrContext } */) {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   })
 
+  // simple global guard: check route meta.requiresAuth or meta.requiredRole
+  Router.beforeEach((to, from, next) => {
+    const auth = JSON.parse(localStorage.getItem('user') || 'null')
+    if (to.meta && to.meta.requiresAuth && !auth) {
+      return next('/login')
+    }
+    if (to.meta && to.meta.requiredRole && auth && auth.role !== to.meta.requiredRole) {
+      // unauthorized
+      return next('/')
+    }
+    next()
+  })
+
   return Router
 })

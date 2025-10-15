@@ -4,7 +4,7 @@ import { api } from 'boot/axios'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || '')
-  const user = ref(null)
+  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
 
   function setToken(t) {
     token.value = t
@@ -18,17 +18,29 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(credentials) {
     const res = await api.post('/api/auth/login', credentials)
     setToken(res.data.token)
-    user.value = res.data.user || null
+    // backend returns { token, role, userId, name }
+    user.value = {
+      id: res.data.userId,
+      name: res.data.name,
+      role: res.data.role,
+    }
+    if (user.value) localStorage.setItem('user', JSON.stringify(user.value))
     return res
   }
 
   function logout() {
     setToken('')
     user.value = null
+    localStorage.removeItem('user')
   }
 
-  // initialize axios header if token exists
+  // initialize axios header and user if token exists
   if (token.value) api.defaults.headers.common.Authorization = `Bearer ${token.value}`
+  if (token.value && !user.value) {
+    // try to read persisted user
+    const persisted = localStorage.getItem('user')
+    if (persisted) user.value = JSON.parse(persisted)
+  }
 
   return { token, user, login, logout }
 })
