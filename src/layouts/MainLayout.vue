@@ -4,17 +4,30 @@
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
+            <q-toolbar-title> Quasar App </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+            <div class="row items-center">
+              <div class="q-mr-sm">Quasar v{{ $q.version }}</div>
+              <div v-if="auth.user">{{ auth.user.name }}</div>
+              <q-btn v-if="!auth.user" dense flat label="Login" @click="$router.push('/login')" />
+              <q-btn v-else dense flat label="Logout" @click="logout" />
+            </div>
       </q-toolbar>
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
-        <q-item-label header> Essential Links </q-item-label>
+        <q-item-label header> Navigation </q-item-label>
 
-        <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
+        <q-item clickable v-for="link in linksList" :key="link.title" @click="$router.push(link.link)">
+          <q-item-section avatar>
+            <q-icon :name="link.icon" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>{{ link.title }}</q-item-label>
+            <q-item-label caption>{{ link.caption }}</q-item-label>
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-drawer>
 
@@ -26,7 +39,8 @@
 
 <script setup>
 import { ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
+// EssentialLink component is no longer used here (we use simple q-item navigation)
+import { useAuthStore } from 'stores/auth'
 
 const linksList = [
   {
@@ -73,7 +87,24 @@ const linksList = [
   },
 ]
 
+// add app-specific links
+linksList.unshift(
+  { title: 'Home', caption: 'Overview', icon: 'home', link: '/' },
+  { title: 'Students', caption: 'Students', icon: 'person', link: '/students' },
+  { title: 'Teachers', caption: 'Teachers', icon: 'school', link: '/teachers' },
+  { title: 'Courses', caption: 'Courses', icon: 'menu_book', link: '/courses' },
+  { title: 'Cart', caption: 'Cart', icon: 'shopping_cart', link: '/cart' },
+  { title: 'Orders', caption: 'Orders', icon: 'receipt', link: '/orders' }
+)
+
 const leftDrawerOpen = ref(false)
+const auth = useAuthStore()
+
+function logout() {
+  auth.logout()
+  // simple notify
+  // use $q or Notify in components; keep minimal here
+}
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
