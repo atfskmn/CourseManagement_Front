@@ -8,16 +8,29 @@
       <q-separator />
 
       <q-card-section>
-            <div v-if="student">
-              <q-input v-model="form.name" label="Name" dense />
-              <q-input v-model="form.email" label="Email" dense />
-              <div class="q-mt-md">
-                <q-btn color="primary" label="Save" @click="save" :loading="saving" />
-              </div>
-            </div>
-            <div v-else>
-              <q-skeleton type="text" />
-            </div>
+        <div v-if="student">
+          <q-input
+            v-model="form.name"
+            label="Name"
+            dense
+          />
+          <q-input
+            v-model="form.email"
+            label="Email"
+            dense
+          />
+          <div class="q-mt-md">
+            <q-btn
+              color="primary"
+              label="Save"
+              @click="save"
+              :loading="saving"
+            />
+          </div>
+        </div>
+        <div v-else>
+          <q-skeleton type="text" />
+        </div>
       </q-card-section>
     </q-card>
   </q-page>
@@ -54,6 +67,7 @@ async function save() {
     await load()
   } catch (err) {
     Notify.create({ type: 'negative', message: 'Save failed' })
+    console.error(err)
   } finally {
     saving.value = false
   }
