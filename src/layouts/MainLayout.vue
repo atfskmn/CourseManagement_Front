@@ -88,8 +88,8 @@ import { ref } from 'vue'
 // EssentialLink component is no longer used here (we use simple q-item navigation)
 import { useAuthStore } from 'stores/auth'
 
-import { onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed } from 'vue'
+// no direct router usage in this layout
 
 // linksList will be computed based on user role
 const linksList = computed(() => {
@@ -113,12 +113,7 @@ const linksList = computed(() => {
 const leftDrawerOpen = ref(false)
 const auth = useAuthStore()
 
-const router = useRouter()
-onMounted(() => {
-  if (!auth.user) {
-    window.setTimeout(() => { router.push('/login') }, 10)
-  }
-})
+// do not auto-redirect here; router guard handles auth redirects
 
 function logout() {
   auth.logout()
