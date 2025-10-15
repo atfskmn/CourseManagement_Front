@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <q-card>
+    <q-card class="card-elevated anim-fade-up page-bg">
       <q-card-section>
         <div class="text-h6">Student Detail</div>
       </q-card-section>
@@ -25,6 +25,7 @@
               label="Save"
               @click="save"
               :loading="saving"
+              class="btn-animated"
             />
           </div>
         </div>

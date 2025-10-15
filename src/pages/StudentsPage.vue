@@ -1,44 +1,86 @@
 <template>
   <q-page padding>
-    <q-card>
+    <q-card class="card-elevated anim-fade-up page-bg">
       <q-card-section>
         <div class="text-h6">Students</div>
       </q-card-section>
 
       <q-separator />
 
+      <q-card-section>
+        <div class="row items-center q-gutter-sm q-mb-md">
+          <q-btn
+            color="primary"
+            @click="fetchStudents"
+            class="btn-animated"
+          >Refresh</q-btn>
+          <q-btn
+            color="secondary"
+            @click="openNew"
+            class="btn-animated"
+          >New Student</q-btn>
+        </div>
+
+        <q-skeleton
+          v-if="loading"
+          type="table"
+        />
+        <q-table
+          v-else
+          :rows="students"
+          :columns="columns"
+          row-key="id"
+          @request="fetchStudents"
+        >
+          <template v-slot:body-cell-name="props">
+            <q-td :props="props">
+              <router-link
+                :to="`/students/${props.row.id}`"
+                class="text-primary"
+              >{{ props.row.name }}</router-link>
+            </q-td>
+          </template>
+        </q-table>
+      </q-card-section>
+
+      <q-dialog v-model="showNew">
+        <q-card style="min-width: 300px;">
           <q-card-section>
-            <div class="row items-center q-gutter-sm q-mb-md">
-              <q-btn color="primary" @click="fetchStudents">Refresh</q-btn>
-              <q-btn color="secondary" @click="openNew">New Student</q-btn>
-            </div>
-
-            <q-skeleton v-if="loading" type="table" />
-            <q-table v-else :rows="students" :columns="columns" row-key="id" @request="fetchStudents" >
-              <template v-slot:body-cell-name="props">
-                <q-td :props="props">
-                  <router-link :to="`/students/${props.row.id}`">{{ props.row.name }}</router-link>
-                </q-td>
-              </template>
-            </q-table>
+            <div class="text-h6">New Student</div>
           </q-card-section>
-
-          <q-dialog v-model="showNew">
-            <q-card style="min-width: 300px;">
-              <q-card-section>
-                <div class="text-h6">New Student</div>
-              </q-card-section>
-              <q-card-section>
-                <q-input v-model="form.name" label="Name" dense />
-                <q-input v-model="form.email" label="Email" dense />
-                <q-input v-model="form.password" label="Password" type="password" dense />
-              </q-card-section>
-              <q-card-actions align="right">
-                <q-btn flat label="Cancel" v-close-popup />
-                <q-btn color="primary" label="Create" @click="createStudent" :loading="creating" />
-              </q-card-actions>
-            </q-card>
-          </q-dialog>
+          <q-card-section>
+            <q-input
+              v-model="form.name"
+              label="Name"
+              dense
+            />
+            <q-input
+              v-model="form.email"
+              label="Email"
+              dense
+            />
+            <q-input
+              v-model="form.password"
+              label="Password"
+              type="password"
+              dense
+            />
+          </q-card-section>
+          <q-card-actions align="right">
+            <q-btn
+              flat
+              label="Cancel"
+              v-close-popup
+            />
+            <q-btn
+              color="primary"
+              label="Create"
+              @click="createStudent"
+              :loading="creating"
+            />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
     </q-card>
   </q-page>
 </template>
@@ -83,7 +125,7 @@ function openNew() {
 async function createStudent() {
   creating.value = true
   try {
-  await api.post('/api/students', form.value)
+    await api.post('/api/students', form.value)
     Notify.create({ type: 'positive', message: 'Student created' })
     showNew.value = false
     form.value = { name: '', email: '', password: '' }
