@@ -1,16 +1,37 @@
 <template>
   <q-page padding>
-    <q-card class="q-ma-md" style="max-width: 400px; margin: auto">
+    <q-card
+      class="q-ma-md"
+      style="max-width: 400px; margin: auto"
+    >
       <q-card-section>
         <div class="text-h6">Login</div>
       </q-card-section>
 
       <q-card-section>
-        <q-form @submit.prevent="doLogin" ref="form">
-          <q-input v-model="email" label="Email" type="email" dense />
-          <q-input v-model="password" label="Password" type="password" dense />
+        <q-form
+          @submit.prevent="doLogin"
+          ref="form"
+        >
+          <q-input
+            v-model="email"
+            label="Email"
+            type="email"
+            dense
+          />
+          <q-input
+            v-model="password"
+            label="Password"
+            type="password"
+            dense
+          />
           <div class="q-mt-md">
-            <q-btn label="Login" color="primary" type="submit" :loading="loading" />
+            <q-btn
+              label="Login"
+              color="primary"
+              type="submit"
+              :loading="loading"
+            />
           </div>
         </q-form>
       </q-card-section>
@@ -35,7 +56,7 @@ async function doLogin() {
   try {
     await auth.login({ email: email.value, password: password.value })
     Notify.create({ type: 'positive', message: 'Logged in' })
-    router.push('/')
+    router.push('/app')
   } catch (err) {
     Notify.create({ type: 'negative', message: err.response?.data?.message || 'Login failed' })
   } finally {
