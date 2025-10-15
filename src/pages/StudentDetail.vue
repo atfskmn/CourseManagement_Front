@@ -66,8 +66,8 @@ async function save() {
     Notify.create({ type: 'positive', message: 'Saved' })
     await load()
   } catch (err) {
+    console.error('Student save failed:', err)
     Notify.create({ type: 'negative', message: 'Save failed' })
-    console.error(err)
   } finally {
     saving.value = false
   }
