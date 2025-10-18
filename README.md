@@ -43,3 +43,4 @@ quasar build
 See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
 # Coruse-Management-Front
 # CourseManagement_Front
+# CourseManagement_Front
