@@ -1,46 +1,13 @@
-# Quasar App (course-management)
-
-A Quasar Project
-
-## Install the dependencies
-
-```bash
-yarn
-# or
-npm install
-```
-
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
-
-```bash
-quasar dev
-```
-
-### Lint the files
-
-```bash
-yarn lint
-# or
-npm run lint
-```
-
-### Format the files
-
-```bash
-yarn format
-# or
-npm run format
-```
-
-### Build the app for production
-
-```bash
-quasar build
-```
-
-### Customize the configuration
-
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
-# Coruse-Management-Front
-# CourseManagement_Front
-# CourseManagement_Front
+<img width="1920" height="1080" alt="Ekran Görüntüsü - 2025-10-25 22-33-26" src="https://github.com/user-attachments/assets/6f3ddbf9-6dd8-4db6-95c1-9f2e5db3e786" />
+<img width="1920" height="1080" alt="Ekran Görüntüsü - 2025-10-25 22-33-01" src="https://github.com/user-attachments/assets/fc04de6e-bc44-4cbf-8125-622d6471e6d8" />
+<img width="1920" height="1080" alt="Ekran Görüntüsü - 2025-10-25 22-10-01" src="https://github.com/user-attachments/assets/54fc9339-bcd3-4786-9e4b-9a284f33386d" />
+<img width="1920" height="1080" alt="Ekran Görüntüsü - 2025-10-25 22-09-50" src="https://github.com/user-attachments/assets/18e30db5-55e7-4e1c-b674-ecf41c0bf047" />
+<img width="1920" height="1080" alt="Ekran Görüntüsü - 2025-10-25 22-06-36" src="https://github.com/user-attachments/assets/9508ec12-ee98-4d3f-bd5b-bdcfb1022f9d" />
+<img width="1920" height="1080" alt="Ekran Görüntüsü - 2025-10-25 22-06-29" src="https://github.com/user-attachments/assets/8d773e2d-9867-4ccf-87df-0f826b3ac7d4" />
+<img width="1920" height="1080" alt="Ekran Görüntüsü - 2025-10-25 22-06-23" src="https://github.com/user-attachments/assets/5d0c7099-05cb-487b-94a2-4a779b264ec1" />
+<img width="1920" height="1080" alt="Ekran Görüntüsü - 2025-10-25 22-06-06" src="https://github.com/user-attachments/assets/49f0af5e-029a-47b4-b45c-dbf0aaeb7f29" />
+<img width="1920" height="1080" alt="Ekran Görüntüsü - 2025-10-25 22-05-25" src="https://github.com/user-attachments/assets/7970bce9-6a14-46db-a63f-ef5b6bdeae72" />
+<img width="1920" height="1080" alt="Ekran Görüntüsü - 2025-10-25 22-04-55" src="https://github.com/user-attachments/assets/4bc045e3-15c0-4165-bae3-ae7c19037571" />
+<img width="1920" height="1080" alt="Ekran Görüntüsü - 2025-10-25 22-04-24" src="https://github.com/user-attachments/assets/6775bc21-944c-471a-96f7-fdaab08e5c30" />
+<img width="1920" height="1080" alt="Ekran Görüntüsü - 2025-10-25 22-03-42" src="https://github.com/user-attachments/assets/de617745-9c79-4dc2-9a30-24c4af4f3cb9" />
+<img width="1920" height="1080" alt="Ekran Görüntüsü - 2025-10-25 22-02-02" src="https://github.com/user-attachments/assets/529c82c1-fdd3-4959-b16a-6b6560be9330" />
