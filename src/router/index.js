@@ -6,6 +6,7 @@ import {
   createWebHashHistory,
 } from 'vue-router'
 import routes from './routes'
+import { useAuthStore } from '../stores/auth'
 
 /*
  * If not building with SSR mode, you can
@@ -33,16 +34,74 @@ export default defineRouter(function (/* { store, ssrContext } */) {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   })
 
-  // simple global guard: check route meta.requiresAuth or meta.requiredRole
+  // Navigation guard for protected routes
   Router.beforeEach((to, from, next) => {
-    const auth = JSON.parse(localStorage.getItem('user') || 'null')
-    if (to.meta && to.meta.requiresAuth && !auth) {
-      return next('/login')
+    const authStore = useAuthStore()
+
+    console.log('Navigation:', {
+      path: to.path,
+      authenticated: authStore.isAuthenticated,
+      role: authStore.role,
+    })
+
+    // Redirect root to login if not authenticated
+    if (to.path === '/' && !authStore.isAuthenticated) {
+      console.log('Redirecting to /login - not authenticated')
+      next('/login')
+      return
     }
-    if (to.meta && to.meta.requiredRole && auth && auth.role !== to.meta.requiredRole) {
-      // unauthorized
-      return next('/')
+
+    // If authenticated and on root, redirect to appropriate dashboard
+    if (to.path === '/' && authStore.isAuthenticated) {
+      if (authStore.isStudent) {
+        console.log('Redirecting student to /courses')
+        next('/courses')
+      } else if (authStore.isTeacher) {
+        console.log('Redirecting teacher to /my-courses')
+        next('/my-courses')
+      } else {
+        console.log('Unknown role, staying on /')
+        next()
+      }
+      return
     }
+
+    // Check if route requires authentication
+    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+      console.log('Route requires auth, redirecting to /login')
+      next('/login')
+      return
+    }
+
+    // Check if route requires student role
+    if (to.meta.requiresStudent && !authStore.isStudent) {
+      console.log('Route requires student, redirecting to /courses')
+      next('/courses')
+      return
+    }
+
+    // Check if route requires teacher role
+    if (to.meta.requiresTeacher && !authStore.isTeacher) {
+      console.log('Route requires teacher, redirecting to /my-courses')
+      next('/my-courses')
+      return
+    }
+
+    // If already logged in, redirect from login/register to appropriate dashboard
+    if ((to.path === '/login' || to.path.startsWith('/register')) && authStore.isAuthenticated) {
+      if (authStore.isStudent) {
+        console.log('Already logged in as student, redirecting to /courses')
+        next('/courses')
+      } else if (authStore.isTeacher) {
+        console.log('Already logged in as teacher, redirecting to /my-courses')
+        next('/my-courses')
+      } else {
+        next('/')
+      }
+      return
+    }
+
+    console.log('Allowing navigation to:', to.path)
     next()
   })
 

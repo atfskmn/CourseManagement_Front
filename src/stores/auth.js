@@ -1,46 +1,112 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { api } from 'boot/axios'
+import { api } from '../services/api'
 
-export const useAuthStore = defineStore('auth', () => {
-  const token = ref(localStorage.getItem('token') || '')
-  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
+export const useAuthStore = defineStore('auth', {
+  state: () => ({
+    token: localStorage.getItem('token') || null,
+    user: JSON.parse(localStorage.getItem('user') || 'null'),
+    role: localStorage.getItem('role') || null,
+    entityId: localStorage.getItem('entityId') || null,
+  }),
 
-  function setToken(t) {
-    token.value = t
-    if (t) localStorage.setItem('token', t)
-    else localStorage.removeItem('token')
-    // set axios header
-    if (t) api.defaults.headers.common.Authorization = `Bearer ${t}`
-    else delete api.defaults.headers.common.Authorization
-  }
+  getters: {
+    isAuthenticated: (state) => !!state.token,
+    isStudent: (state) => state.role === 'STUDENT',
+    isTeacher: (state) => state.role === 'TEACHER',
+    currentUserId: (state) => (state.entityId ? parseInt(state.entityId) : null),
+  },
 
-  async function login(credentials) {
-    const res = await api.post('/api/auth/login', credentials)
-    setToken(res.data.token)
-    // backend returns { token, role, userId, name }
-    user.value = {
-      id: res.data.userId,
-      name: res.data.name,
-      role: res.data.role,
-    }
-    if (user.value) localStorage.setItem('user', JSON.stringify(user.value))
-    return res
-  }
+  actions: {
+    async login(username, password) {
+      try {
+        const response = await api.post('/auth/login', { username, password })
+        const { token, entityId, role, email } = response.data
 
-  function logout() {
-    setToken('')
-    user.value = null
-    localStorage.removeItem('user')
-  }
+        this.token = token
+        this.entityId = entityId
+        this.role = role
+        this.user = { username, email, role }
 
-  // initialize axios header and user if token exists
-  if (token.value) api.defaults.headers.common.Authorization = `Bearer ${token.value}`
-  if (token.value && !user.value) {
-    // try to read persisted user
-    const persisted = localStorage.getItem('user')
-    if (persisted) user.value = JSON.parse(persisted)
-  }
+        localStorage.setItem('token', token)
+        localStorage.setItem('entityId', entityId)
+        localStorage.setItem('role', role)
+        localStorage.setItem('user', JSON.stringify(this.user))
 
-  return { token, user, login, logout }
+        return { success: true, role }
+      } catch (error) {
+        console.error('Login failed:', error)
+        throw error
+      }
+    },
+
+    async registerStudent(username, password, name, email) {
+      try {
+        const response = await api.post('/auth/register', {
+          username,
+          password,
+          name,
+          email,
+          role: 'STUDENT',
+        })
+
+        const { token, entityId, role } = response.data
+
+        this.token = token
+        this.entityId = entityId
+        this.role = role
+        this.user = { username, email, role }
+
+        localStorage.setItem('token', token)
+        localStorage.setItem('entityId', entityId)
+        localStorage.setItem('role', role)
+        localStorage.setItem('user', JSON.stringify(this.user))
+
+        return { success: true, role }
+      } catch (error) {
+        console.error('Student registration failed:', error)
+        throw error
+      }
+    },
+
+    async registerTeacher(username, password, name, email) {
+      try {
+        const response = await api.post('/auth/register', {
+          username,
+          password,
+          name,
+          email,
+          role: 'TEACHER',
+        })
+
+        const { token, entityId, role } = response.data
+
+        this.token = token
+        this.entityId = entityId
+        this.role = role
+        this.user = { username, email, role }
+
+        localStorage.setItem('token', token)
+        localStorage.setItem('entityId', entityId)
+        localStorage.setItem('role', role)
+        localStorage.setItem('user', JSON.stringify(this.user))
+
+        return { success: true, role }
+      } catch (error) {
+        console.error('Teacher registration failed:', error)
+        throw error
+      }
+    },
+
+    logout() {
+      this.token = null
+      this.user = null
+      this.role = null
+      this.entityId = null
+
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      localStorage.removeItem('role')
+      localStorage.removeItem('entityId')
+    },
+  },
 })

@@ -1,52 +1,140 @@
 // app global css in SCSS form
 
-// Import Quasar variables if needed (already available via quasar.variables.scss)
-
-// Animation utilities
-@keyframes fade-up {
-	from { opacity: 0; transform: translateY(8px); }
-	to { opacity: 1; transform: translateY(0); }
+// Modern gradient backgrounds
+.gradient-bg {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
 }
 
-@keyframes pulse {
-	0% { transform: scale(1); }
-	50% { transform: scale(1.03); }
-	100% { transform: scale(1); }
+.gradient-text {
+  background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.anim-fade-up {
-	animation: fade-up 360ms cubic-bezier(.2,.8,.2,1) both;
+// Glass morphism effect
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
-.anim-pulse {
-	animation: pulse 1.6s ease-in-out infinite;
+// Animated gradient border
+@keyframes gradient-border {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
-// Button and card accent helpers
-.btn-animated {
-	transition: transform 160ms ease, box-shadow 160ms ease;
-}
-.btn-animated:active {
-	transform: scale(.98);
-}
-
-.card-elevated {
-	transition: box-shadow 200ms ease, transform 200ms ease;
-}
-.card-elevated:hover {
-	transform: translateY(-6px);
-	box-shadow: 0 14px 30px rgba(2,6,23,0.16);
-}
-
-// Page container subtle background
-.page-bg {
-	background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0));
+.gradient-border {
+  position: relative;
+  background: linear-gradient(45deg, #6366f1, #8b5cf6, #ec4899, #6366f1);
+  background-size: 300% 300%;
+  animation: gradient-border 3s ease infinite;
+  padding: 2px;
+  border-radius: 16px;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: $dark-page;
+    border-radius: 14px;
+  }
 }
 
-.accent-tag {
-	background-color: rgba(255,107,107,0.08);
-	color: $accent;
-	padding: 4px 8px;
-	border-radius: 6px;
-	font-weight: 600;
+// Floating animation
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
 }
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+// Pulse animation
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.8);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+// Shimmer effect
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+// Page transitions
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+}
+
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-30px) scale(0.95);
+}
+
+// Smooth scroll
+html {
+  scroll-behavior: smooth;
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: $dark;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  border-radius: 6px;
+  
+  &:hover {
+    background: linear-gradient(180deg, #8b5cf6, #ec4899);
+  }
+}
+
