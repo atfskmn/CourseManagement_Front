@@ -1,4 +1,10 @@
-import { api } from 'boot/axios'
+import axios from 'axios'
+
+// Shared Axios instance without importing Pinia stores to avoid circular deps
+export const api = axios.create({
+  baseURL: 'http://localhost:8080/api',
+})
+// Using local axios instance; do not import from boot to avoid circular deps
 
 // base API service helper
 export default {

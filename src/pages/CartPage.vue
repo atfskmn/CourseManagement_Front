@@ -48,30 +48,65 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { Notify } from 'quasar'
 import { getCart, removeCourseFromCart, emptyCart } from '../services/cart'
 import { placeOrder } from '../services/orders'
+import { useAuthStore } from '../stores/auth'
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 const cart = ref(null)
-const studentId = 1
+const studentId = computed(() => authStore.currentUserId)
 
 onMounted(async () => {
-  cart.value = await getCart(studentId)
+  if (!authStore.isStudent || !studentId.value) {
+    router.push('/login')
+    return
+  }
+  await refreshCart()
 })
 
+async function refreshCart() {
+  try {
+    cart.value = await getCart(studentId.value)
+    const count = cart.value && cart.value.items ? cart.value.items.length : 0
+    window.dispatchEvent(new CustomEvent('cart:updated', { detail: { count } }))
+  } catch (err) {
+    Notify.create({ type: 'negative', message: err?.response?.data?.message || 'Unable to load cart', position: 'top' })
+  }
+}
+
 async function remove(item) {
-  await removeCourseFromCart(studentId, item.courseId)
-  cart.value = await getCart(studentId)
+  try {
+    await removeCourseFromCart(studentId.value, item.courseId)
+    await refreshCart()
+    Notify.create({ type: 'positive', message: 'Item removed', position: 'top' })
+  } catch (err) {
+    Notify.create({ type: 'negative', message: err?.response?.data?.message || 'Failed to remove item', position: 'top' })
+  }
 }
 
 async function empty() {
-  await emptyCart(studentId)
-  cart.value = await getCart(studentId)
+  try {
+    await emptyCart(studentId.value)
+    await refreshCart()
+    Notify.create({ type: 'positive', message: 'Cart emptied', position: 'top' })
+  } catch (err) {
+    Notify.create({ type: 'negative', message: err?.response?.data?.message || 'Failed to empty cart', position: 'top' })
+  }
 }
 
 async function placeOrderAction() {
-  await placeOrder(studentId)
-  // navigate to orders page (simple)
-  window.location.href = '/orders'
+  try {
+    await placeOrder(studentId.value)
+    Notify.create({ type: 'positive', message: 'Order placed successfully', position: 'top' })
+    await refreshCart()
+    router.push('/orders')
+  } catch (err) {
+    Notify.create({ type: 'negative', message: err?.response?.data?.message || 'Failed to place order', position: 'top' })
+  }
 }
 </script>

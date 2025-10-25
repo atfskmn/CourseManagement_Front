@@ -30,6 +30,16 @@
           </div>
         </q-toolbar-title>
 
+        <q-chip
+          square
+          color="secondary"
+          text-color="white"
+          class="q-mr-sm"
+          icon="groups"
+        >
+          Expert Teachers: {{ headerTeachersCount }}
+        </q-chip>
+
         <q-btn
           flat
           round
@@ -44,6 +54,7 @@
         </q-btn>
 
         <q-btn
+          v-if="authStore.isStudent"
           flat
           round
           dense
@@ -56,6 +67,18 @@
             color="accent"
             floating
           >{{ cartCount }}</q-badge>
+        </q-btn>
+
+        <q-btn
+          v-if="authStore.isAuthenticated"
+          flat
+          round
+          dense
+          icon="logout"
+          class="hover-scale q-ml-sm"
+          @click="handleLogout"
+        >
+          <q-tooltip>Logout</q-tooltip>
         </q-btn>
       </q-toolbar>
     </q-header>
@@ -248,32 +271,104 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { getCart } from '../services/cart'
+import { getStats } from '../services/stats'
+import { useAuthStore } from '../stores/auth'
 
-const linksList = [
-  { title: 'Courses', caption: 'Browse courses', icon: 'school', link: '/courses' },
-  { title: 'Cart', caption: 'Your cart', icon: 'shopping_cart', link: '/cart' },
-  { title: 'Orders', caption: 'Your orders', icon: 'receipt_long', link: '/orders' },
-  { title: 'Students', caption: 'Manage students', icon: 'people', link: '/students' },
-  { title: 'Teachers', caption: 'Manage teachers', icon: 'person', link: '/teachers' },
-]
+const router = useRouter()
+const authStore = useAuthStore()
+
+// Computed menu based on user role
+const linksList = computed(() => {
+  const baseLinks = [
+    { title: 'Courses', caption: 'Browse courses', icon: 'school', link: '/courses' }
+  ]
+
+  if (!authStore.isAuthenticated) {
+    return [
+      ...baseLinks,
+      { title: 'Login', caption: 'Sign in', icon: 'login', link: '/login' }
+    ]
+  }
+
+  if (authStore.isStudent) {
+    return [
+      ...baseLinks,
+      { title: 'Cart', caption: 'Your cart', icon: 'shopping_cart', link: '/cart' },
+      { title: 'Orders', caption: 'Your orders', icon: 'receipt_long', link: '/orders' }
+    ]
+  }
+
+  if (authStore.isTeacher) {
+    return [
+      ...baseLinks,
+      { title: 'My Courses', caption: 'Manage your courses', icon: 'edit_note', link: '/my-courses' }
+    ]
+  }
+
+  return baseLinks
+})
 
 const leftDrawerOpen = ref(false)
-const cartCount = ref(0) // will be populated from API
-const studentId = 1 // temporary until auth
+const cartCount = ref(0)
+const headerTeachersCount = ref('...')
+let headerStatsTimer = null
+
+async function fetchHeaderTeachersCount() {
+  try {
+    const stats = await getStats()
+    headerTeachersCount.value = stats.teachers ?? 0
+  } catch {
+    headerTeachersCount.value = 0
+  }
+}
 
 onMounted(async () => {
-  try {
-    const cart = await getCart(studentId)
-    cartCount.value = cart && cart.items ? cart.items.length : 0
-  } catch {
-    cartCount.value = 0
+  if (authStore.isStudent && authStore.currentUserId) {
+    try {
+      const cart = await getCart(authStore.currentUserId)
+      cartCount.value = cart && cart.items ? cart.items.length : 0
+    } catch {
+      cartCount.value = 0
+    }
   }
+
+  // Initial fetch + refresh every 20s
+  await fetchHeaderTeachersCount()
+  headerStatsTimer = setInterval(fetchHeaderTeachersCount, 20000)
+
+  // Live cart count updates from pages
+  window.addEventListener('cart:updated', onCartUpdated)
 })
+
+onBeforeUnmount(() => {
+  if (headerStatsTimer) {
+    clearInterval(headerStatsTimer)
+    headerStatsTimer = null
+  }
+  window.removeEventListener('cart:updated', onCartUpdated)
+})
+
+function onCartUpdated(e) {
+  try {
+    const count = e?.detail?.count
+    if (typeof count === 'number') {
+      cartCount.value = count
+    }
+  } catch {
+    /* no-op */
+  }
+}
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
+}
+
+function handleLogout() {
+  authStore.logout()
+  router.push('/login')
 }
 </script>
 

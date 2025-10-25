@@ -1,13 +1,47 @@
 import { defineBoot } from '#q-app/wrappers'
 import axios from 'axios'
+import { api } from '../services/api'
+import { useAuthStore } from '../stores/auth'
+import { Notify } from 'quasar'
 
-// Be careful when using SSR for cross-request state pollution
-// due to creating a Singleton instance here;
-// If any client changes this (global) instance, it might be a
-// good idea to move this instance creation inside of the
-// "export default () => {}" function below (which runs individually
-// for each client)
-const api = axios.create({ baseURL: 'http://localhost:8080' })
+// api instance is created in services/api to avoid circular deps with stores
+
+// Request interceptor - add token to headers
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  },
+)
+
+// Response interceptor - handle 401 errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      const authStore = useAuthStore()
+      authStore.logout()
+
+      Notify.create({
+        type: 'negative',
+        message: 'Session expired. Please login again.',
+        position: 'top',
+      })
+
+      // Redirect to login (hash mode)
+      if (!window.location.hash.includes('/login')) {
+        window.location.href = '/#/login'
+      }
+    }
+    return Promise.reject(error)
+  },
+)
 
 export default defineBoot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
