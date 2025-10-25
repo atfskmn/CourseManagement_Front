@@ -23,28 +23,10 @@
           <div class="stat-card glass-card q-pa-md">
             <div class="text-h4 text-weight-bold text-accent">{{ studentsCount }}</div>
             <div class="text-caption text-grey-6">Active Students</div>
-            <div class="q-mt-sm">
-              <q-btn
-                dense
-                flat
-                label="View all"
-                size="sm"
-                :to="{ path: '/students', query: { from: 'courses' } }"
-              />
-            </div>
           </div>
           <div class="stat-card glass-card q-pa-md">
             <div class="text-h4 text-weight-bold text-secondary">{{ teachersCount }}</div>
             <div class="text-caption text-grey-6">Expert Teachers</div>
-            <div class="q-mt-sm">
-              <q-btn
-                dense
-                flat
-                label="View all"
-                size="sm"
-                :to="{ path: '/teachers', query: { from: 'courses' } }"
-              />
-            </div>
           </div>
         </div>
       </div>
@@ -128,11 +110,11 @@
               />
               <q-chip
                 dense
-                color="accent"
+                :color="(!course.isAvailable || seatsLeft(course) === 0) ? 'negative' : 'positive'"
                 text-color="white"
                 size="sm"
               >
-                New
+                {{ !course.isAvailable ? 'Closed' : (seatsLeft(course) === 0 ? 'Full' : 'Open') }}
               </q-chip>
             </div>
             <div class="text-h5 text-weight-bold q-mb-sm">{{ course.name }}</div>
@@ -154,13 +136,16 @@
                   text-color="white"
                   icon="people"
                 >
-                  {{ course.maxStudents }} seats
+                  {{ Math.max((course.maxStudents || 0) - (course.currentStudentCount || 0), 0) }} seats left
                 </q-chip>
               </div>
             </div>
           </q-card-section>
 
-          <q-card-actions class="q-pa-md">
+          <q-card-actions
+            class="q-pa-md"
+            v-if="authStore.isStudent"
+          >
             <q-btn
               unelevated
               rounded
@@ -171,6 +156,21 @@
               @click.stop="addToCart(course)"
             />
           </q-card-actions>
+
+          <!-- Capacity Progress -->
+          <div class="q-px-md q-pb-md">
+            <q-linear-progress
+              :value="capacityRatio(course)"
+              size="8px"
+              :color="(!course.isAvailable || seatsLeft(course) === 0) ? 'negative' : 'primary'"
+              track-color="grey-4"
+              rounded
+            />
+            <div class="row items-center justify-between q-mt-xs text-caption text-grey-6">
+              <div>Enrolled: {{ (course.currentStudentCount || 0) }} / {{ (course.maxStudents || 0) }}</div>
+              <div>{{ seatsLeft(course) }} left</div>
+            </div>
+          </div>
 
           <!-- Shimmer Effect on Hover -->
           <div class="shimmer-overlay"></div>
@@ -246,7 +246,17 @@
     >
       <q-card style="min-width: 500px">
         <q-card-section>
-          <div class="text-h6">{{ selectedCourse.name }}</div>
+          <div class="row items-center justify-between">
+            <div class="text-h6">{{ selectedCourse.name }}</div>
+            <q-chip
+              dense
+              :color="(!selectedCourse.isAvailable || seatsLeft(selectedCourse) === 0) ? 'negative' : 'positive'"
+              text-color="white"
+              size="sm"
+            >
+              {{ !selectedCourse.isAvailable ? 'Closed' : (seatsLeft(selectedCourse) === 0 ? 'Full' : 'Open') }}
+            </q-chip>
+          </div>
         </q-card-section>
 
         <q-card-section>
@@ -259,9 +269,19 @@
             <div>${{ selectedCourse.price }}</div>
           </div>
           <div class="q-mb-md">
-            <div class="text-subtitle2">Maximum Students</div>
-            <div>{{ selectedCourse.maxStudents }}</div>
+            <div class="text-subtitle2">Seats</div>
+            <div>{{ Math.max((selectedCourse.maxStudents || 0) - (selectedCourse.currentStudentCount || 0), 0) }} left
+              of {{
+                selectedCourse.maxStudents }}</div>
           </div>
+          <q-linear-progress
+            :value="capacityRatio(selectedCourse)"
+            size="10px"
+            :color="(!selectedCourse.isAvailable || seatsLeft(selectedCourse) === 0) ? 'negative' : 'primary'"
+            track-color="grey-4"
+            rounded
+            class="q-mb-md"
+          />
           <div
             v-if="selectedCourse.teacher"
             class="q-mb-md"
@@ -273,6 +293,7 @@
 
         <q-card-actions align="right">
           <q-btn
+            v-if="authStore.isStudent"
             flat
             label="Add to Cart"
             color="primary"
@@ -288,79 +309,7 @@
       </q-card>
     </q-dialog>
 
-    <!-- Students List Dialog -->
-    <q-dialog v-model="showStudentsDialog">
-      <q-card style="min-width: 600px">
-        <q-card-section>
-          <div class="text-h6">All Students</div>
-        </q-card-section>
 
-        <q-card-section>
-          <q-list bordered>
-            <q-item
-              v-for="s in studentsList"
-              :key="s.id"
-            >
-              <q-item-section>
-                <q-item-label>{{ s.name }}</q-item-label>
-                <q-item-label caption>{{ s.email }}</q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item v-if="studentsList.length === 0">
-              <q-item-section>
-                <q-item-label caption>No students found</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn
-            flat
-            label="Close"
-            v-close-popup
-            @click="showStudentsDialog = false"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
-    <!-- Teachers List Dialog -->
-    <q-dialog v-model="showTeachersDialog">
-      <q-card style="min-width: 600px">
-        <q-card-section>
-          <div class="text-h6">All Teachers</div>
-        </q-card-section>
-
-        <q-card-section>
-          <q-list bordered>
-            <q-item
-              v-for="t in teachersList"
-              :key="t.id"
-            >
-              <q-item-section>
-                <q-item-label>{{ t.name }}</q-item-label>
-                <q-item-label caption>{{ t.email }}</q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item v-if="teachersList.length === 0">
-              <q-item-section>
-                <q-item-label caption>No teachers found</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn
-            flat
-            label="Close"
-            v-close-popup
-            @click="showTeachersDialog = false"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </q-page>
 </template>
 
@@ -371,10 +320,13 @@ import { getAvailableCourses } from '../services/courses'
 import { addCourseToCart, getCart } from '../services/cart'
 import { getStudentCourses } from '../services/students'
 import { getStats } from '../services/stats'
+import { useAuthStore } from '../stores/auth'
+
+const authStore = useAuthStore()
 
 const courses = ref([])
 const cart = ref(null)
-const studentId = 1 // temporary; adapt to auth later
+const studentId = computed(() => authStore.currentUserId)
 const studentsCount = ref('...')
 const teachersCount = ref('...')
 // studentsList/teachersList and dialogs removed — navigation links to dedicated pages are used instead
@@ -396,8 +348,18 @@ const enrolledCourses = ref([])
 
 onMounted(async () => {
   courses.value = await getAvailableCourses()
-  cart.value = await getCart(studentId)
-  enrolledCourses.value = await getStudentCourses(studentId)
+  // Only fetch student-specific data when logged in as student
+  if (authStore.isStudent && studentId.value) {
+    cart.value = await getCart(studentId.value)
+    enrolledCourses.value = await getStudentCourses(studentId.value)
+    // propagate cart count to header
+    try {
+      const count = cart.value && cart.value.items ? cart.value.items.length : 0
+      window.dispatchEvent(new CustomEvent('cart:updated', { detail: { count } }))
+    } catch {
+      // no-op
+    }
+  }
   // fetch counts via optimized stats endpoint
   try {
     const stats = await getStats()
@@ -415,14 +377,42 @@ onMounted(async () => {
 
 
 async function addToCart(course) {
-  await addCourseToCart(studentId, course.id)
-  cart.value = await getCart(studentId)
-  showCourseDetail.value = false
+  if (!authStore.isStudent || !studentId.value) return
+  try {
+    await addCourseToCart(studentId.value, course.id)
+    cart.value = await getCart(studentId.value)
+    Notify.create({ type: 'positive', message: 'Added to cart', position: 'top' })
+    // notify header about new cart count
+    try {
+      const count = cart.value && cart.value.items ? cart.value.items.length : 0
+      window.dispatchEvent(new CustomEvent('cart:updated', { detail: { count } }))
+    } catch {
+      // no-op
+    }
+  } catch (err) {
+    const msg = err?.response?.data?.message || 'Could not add to cart'
+    Notify.create({ type: 'negative', message: msg, position: 'top' })
+  } finally {
+    showCourseDetail.value = false
+  }
 }
 
 function viewCourseDetail(course) {
   selectedCourse.value = course
   showCourseDetail.value = true
+}
+
+// helpers for capacity visuals
+function seatsLeft(c) {
+  const max = (c && c.maxStudents) || 0
+  const curr = (c && c.currentStudentCount) || 0
+  return Math.max(max - curr, 0)
+}
+
+function capacityRatio(c) {
+  const max = (c && c.maxStudents) || 0
+  const curr = (c && c.currentStudentCount) || 0
+  return max > 0 ? curr / max : 0
 }
 </script>
 

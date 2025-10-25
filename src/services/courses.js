@@ -1,13 +1,13 @@
 import api from './api'
 
 export function getAllCourses() {
-  return api.get('/api/courses')
+  return api.get('/courses')
 }
 
 export function getAvailableCourses() {
-  return api.get('/api/courses/available')
+  return api.get('/courses/available')
 }
 
 export function getCoursesForStudent(studentId) {
-  return api.get(`/api/courses/student/${studentId}`)
+  return api.get(`/courses/student/${studentId}`)
 }

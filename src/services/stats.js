@@ -1,5 +1,5 @@
 import api from './api'
 
 export function getStats() {
-  return api.get('/api/stats')
+  return api.get('/stats')
 }
