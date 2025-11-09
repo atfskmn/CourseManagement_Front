@@ -20,7 +20,7 @@ export const useAuthStore = defineStore('auth', {
     async login(username, password) {
       try {
         const response = await api.post('/auth/login', { username, password })
-        const { token, entityId, role, email } = response.data
+        const { token, entityId, role, email } = response
 
         this.token = token
         this.entityId = entityId
@@ -49,7 +49,7 @@ export const useAuthStore = defineStore('auth', {
           role: 'STUDENT',
         })
 
-        const { token, entityId, role } = response.data
+        const { token, entityId, role } = response
 
         this.token = token
         this.entityId = entityId
@@ -78,7 +78,7 @@ export const useAuthStore = defineStore('auth', {
           role: 'TEACHER',
         })
 
-        const { token, entityId, role } = response.data
+        const { token, entityId, role } = response
 
         this.token = token
         this.entityId = entityId
