@@ -275,6 +275,7 @@ async function viewStudent(student) {
     studentCart.value = await getCart(student.id)
   } catch (err) {
     console.error('Failed to load student details', err)
+    $q.notify({ type: 'negative', message: 'Failed to load student details' })
   }
 }
 
@@ -291,6 +292,7 @@ async function submit() {
     await load()
   } catch (err) {
     console.error('Failed to save student', err)
+    $q.notify({ type: 'negative', message: 'Failed to save student' })
   }
 }
 
@@ -320,6 +322,7 @@ function confirmDelete(student) {
       await load()
     } catch (err) {
       console.error('Failed to delete student', err)
+      $q.notify({ type: 'negative', message: 'Failed to delete student' })
     }
   })
 }
